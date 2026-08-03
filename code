@@ -1,0 +1,139 @@
+#include "HX711.h
+HX711 scale1;
+HX711 scale2;
+HX711 scale3;
+HX711 scale4;
+
+#define DT1 3
+#define SCK1 2
+
+#define DT2 5
+#define SCK2 4
+
+#define DT3 7
+#define SCK3 6
+
+#define DT4 9
+#define SCK4 8
+
+#define BUTTON_PIN 10
+
+// Low Pass Filter coefficient
+// Smaller value = smoother output
+float alpha = 0.2;
+
+// Filtered values
+float filtered1 = 0;
+float filtered2 = 0;
+float filtered3 = 0;
+float filtered4 = 0;
+
+// Tare offsets
+long offset1 = 0;
+long offset2 = 0;
+long offset3 = 0;
+long offset4 = 0;
+
+// Sampling timing
+unsigned long previousMillis = 0;
+const int sampleInterval = 100; // 100 ms = 10 Hz
+
+
+void setup() {
+
+Serial.begin(115200);
+
+// Initialize HX711 modules
+scale1.begin(DT1, SCK1);
+scale2.begin(DT2, SCK2);
+scale3.begin(DT3, SCK3);
+scale4.begin(DT4, SCK4);
+
+// Button setup
+pinMode(BUTTON_PIN, INPUT_PULLUP);
+
+Serial.println("====================================");
+Serial.println("4-Channel Strain Measurement System");
+Serial.println("Sampling Rate: 10 Hz");
+Serial.println("Press Button to Tare");
+Serial.println("====================================");
+
+delay(2000);
+
+// Initial tare
+tareAll();
+}
+
+void loop() {
+
+// Push button for tare
+if (digitalRead(BUTTON_PIN) == LOW) {
+
+Serial.println("\nTaring Sensors...");
+tareAll();
+Serial.println("Tare Complete\n");
+
+delay(500);
+}
+
+// 10 Hz Sampling
+unsigned long currentMillis = millis();
+
+if (currentMillis - previousMillis >= sampleInterval) {
+
+previousMillis = currentMillis;
+
+// Read raw values
+long raw1 = scale1.read() - offset1;
+long raw2 = scale2.read() - offset2;
+long raw3 = scale3.read() - offset3;
+long raw4 = scale4.read() - offset4;
+
+filtered1 = alpha * raw1 + (1 - alpha) * filtered1;
+filtered2 = alpha * raw2 + (1 - alpha) * filtered2;
+filtered3 = alpha * raw3 + (1 - alpha) * filtered3;
+filtered4 = alpha * raw4 + (1 - alpha) * filtered4;
+
+Serial.print("CH1: ");
+Serial.print(filtered1);
+
+Serial.print(" | CH2: ");
+Serial.print(filtered2);
+
+Serial.print(" | CH3: ");
+Serial.print(filtered3);
+
+Serial.print(" | CH4: ");
+Serial.println(filtered4);
+}
+}
+
+void tareAll() {
+
+long sum1 = 0;
+long sum2 = 0;
+long sum3 = 0;
+long sum4 = 0;
+
+const int samples = 20;
+
+for (int i = 0; i < samples; i++) {
+
+sum1 += scale1.read();
+sum2 += scale2.read();
+sum3 += scale3.read();
+sum4 += scale4.read();
+delay(10);
+  
+}
+offset1 = sum1 / samples;
+offset2 = sum2 / samples;
+offset3 = sum3 / samples;
+offset4 = sum4 / samples;
+
+// Reset filter values
+filtered1 = 0;
+filtered2 = 0;
+filtered3 = 0;
+filtered4 = 0;
+ 
