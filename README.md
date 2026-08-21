@@ -26,7 +26,8 @@ techniques, making it suitable for learning, research, and prototype development
 - HX711 Library
 
 ## Circuit Diagram
-<img width="1254" height="1254" alt="image" src="https://github.com/user-attachments/assets/3047f3ba-bcd5-4761-9573-4fdce0e52c9b" />
+<img width="1408" height="768" alt="image" src="https://github.com/user-attachments/assets/a0b7ee96-121f-4a22-810b-38c7cb477106" />
+
 
 
 ## How It Works
